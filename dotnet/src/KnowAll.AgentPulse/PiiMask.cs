@@ -52,15 +52,16 @@ public static class PiiMask
             @"\b\d{1,4}\s+[A-Z][A-Za-z']+(?:\s+[A-Z][A-Za-z']+){0,3}\s+" +
             @"(?:Street|St|Road|Rd|Avenue|Ave|Lane|Ln|Drive|Dr|Gardens|Close|Court|Crescent|Terrace|Way|Place|Park)\b", Js), null),
         // Names in the three cue patterns below are Unicode letters, so "Dear Éabha" and "Mrs Ní Bhriain" are
-        // caught. A title may be followed by a one-letter initial or particle ("Mr Ó Briain").
+        // caught. A title may be followed by a one-letter initial or particle ("Mr Ó Briain"). Each name word runs
+        // on to the end of the word, so "Dear O'Brien" or "Dear Éabha张伟" leaves no tail.
         (new Regex(
-            NotAfterWord + @"(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:\p{Lu}\s+)?\p{Lu}\p{Ll}+(?:\s+\p{Lu}\p{Ll}+)?)", Uni), 1),
+            NotAfterWord + @"(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:\p{Lu}\s+)?\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)", Uni), 1),
         (new Regex(
             NotAfterWord + @"[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)" +
-            @"\s+(\p{Lu}\p{Ll}+(?:\s+\p{Lu}\p{Ll}+)?)", Uni), 1),
+            @"\s+(\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)", Uni), 1),
         // Greetings: "Hi Alex," / "Dear Alex Morgan": the name, not the greeting.
         (new Regex(
-            NotAfterWord + @"(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+(\p{Lu}[\p{Ll}'-]+(?:\s+\p{Lu}[\p{Ll}'-]+)?)",
+            NotAfterWord + @"(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+(\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*(?:\s+\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*)?)",
             Uni), 1),
     ];
 

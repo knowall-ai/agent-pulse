@@ -43,20 +43,21 @@ const PATTERNS: Array<{ regex: RegExp; group?: number }> = [
   },
   // Names in the three cue patterns below are Unicode letters (\p{Lu}, \p{Ll}), so "Dear Éabha"
   // and "Mrs Ní Bhriain" are caught, and a lookbehind stands in for \b, which is ASCII-only in
-  // JavaScript. A title may be followed by a one-letter initial or particle ("Mr Ó Briain").
+  // JavaScript. A title may be followed by a one-letter initial or particle ("Mr Ó Briain"). Each
+  // name word runs on to the end of the word, so "Dear O'Brien" or "Dear Éabha张伟" leaves no tail.
   {
-    regex: /(?<![\p{L}\p{N}_])(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:\p{Lu}\s+)?\p{Lu}\p{Ll}+(?:\s+\p{Lu}\p{Ll}+)?)/gu,
+    regex: /(?<![\p{L}\p{N}_])(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:\p{Lu}\s+)?\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)/gu,
     group: 1,
   },
   {
     regex:
-      /(?<![\p{L}\p{N}_])[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)\s+(\p{Lu}\p{Ll}+(?:\s+\p{Lu}\p{Ll}+)?)/gu,
+      /(?<![\p{L}\p{N}_])[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)\s+(\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)/gu,
     group: 1,
   },
   // Greetings: "Hi Alex," / "Dear Alex Morgan": the name, not the greeting.
   {
     regex:
-      /(?<![\p{L}\p{N}_])(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+(\p{Lu}[\p{Ll}'-]+(?:\s+\p{Lu}[\p{Ll}'-]+)?)/gu,
+      /(?<![\p{L}\p{N}_])(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+(\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*(?:\s+\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*)?)/gu,
     group: 1,
   },
 ];

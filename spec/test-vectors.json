@@ -758,6 +758,16 @@
         "Áine"
       ],
       "expected": "Seánsen rang Máine"
+    },
+    {
+      "text": "Dear Éabha张伟, thanks",
+      "known": [],
+      "expected": "Dear *****, thanks"
+    },
+    {
+      "text": "Hi O'Brien, Mr SmithJones and my son Sam2 called",
+      "known": [],
+      "expected": "Hi *****, Mr ***** and my son ***** called"
     }
   ],
   "comparison": [

@@ -78,10 +78,11 @@ _PATTERNS: list[tuple[re.Pattern[str], int | None]] = [
         None,
     ),
     # Names in the three cue patterns below are Unicode letters, so "Dear Éabha" and "Mrs Ní Bhriain"
-    # are caught. A title may be followed by a one-letter initial or particle ("Mr Ó Briain").
+    # are caught. A title may be followed by a one-letter initial or particle ("Mr Ó Briain"). Each
+    # name word runs on to the end of the word, so "Dear O'Brien" or "Dear Éabha张伟" leaves no tail.
     (
         re.compile(
-            rf"{_NOT_AFTER_WORD}(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:[{_LU}]\s+)?[{_LU}][{_LL}]+(?:\s+[{_LU}][{_LL}]+)?)"
+            rf"{_NOT_AFTER_WORD}(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:[{_LU}]\s+)?[{_LU}][{_LL}]+\w*(?:\s+[{_LU}][{_LL}]+\w*)?)"
         ),
         1,
     ),
@@ -89,7 +90,7 @@ _PATTERNS: list[tuple[re.Pattern[str], int | None]] = [
         re.compile(
             rf"{_NOT_AFTER_WORD}[Mm]y\s+"
             r"(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)"
-            rf"\s+([{_LU}][{_LL}]+(?:\s+[{_LU}][{_LL}]+)?)"
+            rf"\s+([{_LU}][{_LL}]+\w*(?:\s+[{_LU}][{_LL}]+\w*)?)"
         ),
         1,
     ),
@@ -97,7 +98,7 @@ _PATTERNS: list[tuple[re.Pattern[str], int | None]] = [
     (
         re.compile(
             rf"{_NOT_AFTER_WORD}(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)"
-            rf"\s+([{_LU}][{_LL}'-]+(?:\s+[{_LU}][{_LL}'-]+)?)"
+            rf"\s+([{_LU}][{_LL}'-]+\w*(?:\s+[{_LU}][{_LL}'-]+\w*)?)"
         ),
         1,
     ),

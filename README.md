@@ -193,11 +193,13 @@ free-standing name with no cue ("Sam can't make it"). Before turning samples on 
 add named-entity recognition (for example Azure AI Language PII detection, run in your own
 tenant) in front of it.
 
-Name matching is Unicode-aware in all three implementations: known names and names after a cue are
-found whatever their alphabet or accents ("Éabha", "Ní Bhriain", "Chloé"), case-insensitively for
-known names, and never inside a longer word. Before v0.1.3 a known name starting or ending with a
-non-ASCII letter could be missed, and cued names had to be ASCII; this was found in review. Upgrade
-if you send samples.
+Name matching is Unicode-aware in all three implementations. Known names are found in any script
+and with any accents ("Éabha", "Chloé", "Ζωή"), case-insensitively, and never inside a longer word.
+Names after a greeting, title or relationship word must start with an upper-case letter followed
+by lower-case ones ("Dear Éabha", "Mrs Ní Bhriain"). Names in scripts without case, such as
+Chinese ("Dear 张伟"), are therefore only masked when you pass them as known names. Before v0.1.3, a
+known name starting or ending with a non-ASCII letter could be missed, and cued names had to be
+ASCII; this was found in review. Upgrade if you send samples.
 
 ## Development
 
