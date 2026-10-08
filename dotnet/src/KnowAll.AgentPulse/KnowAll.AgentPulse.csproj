@@ -11,7 +11,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <PackageId>KnowAll.AgentPulse</PackageId>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>KnowAll AI Ltd</Authors>
     <Company>KnowAll AI Ltd</Company>
     <Description>Report what your AI agents do: AgentActivity events to Application Insights, shown in the KnowAll Agents Portal.</Description>
