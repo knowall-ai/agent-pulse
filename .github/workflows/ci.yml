@@ -23,11 +23,40 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Committed dist/ matches the source
+        run: npm run check:dist
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - name: Package builds
         run: npm pack --dry-run
+
+  git-install:
+    # A git dependency gets the committed tree with no build step, under any
+    # package manager. Install exactly that (git archive) with Bun and load it
+    # both ways on Node 20, the oldest supported runtime.
+    name: Git install (Bun, Node 20)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: oven-sh/setup-bun@v2
+      - name: Install the committed tree into a fresh project with Bun
+        run: |
+          mkdir -p /tmp/pkg /tmp/consumer
+          git archive HEAD | tar -x -C /tmp/pkg
+          cd /tmp/consumer
+          echo '{ "name": "consumer", "version": "1.0.0", "private": true }' > package.json
+          bun add /tmp/pkg
+      - name: require() and import() both load it
+        working-directory: /tmp/consumer
+        run: |
+          node -e "const p = require('@knowall-ai/agent-pulse'); if (typeof p.createPulse !== 'function') process.exit(1); console.log('require ok')"
+          node --input-type=module -e "const p = await import('@knowall-ai/agent-pulse'); if (typeof p.createPulse !== 'function') process.exit(1); console.log('import ok')"
 
   python:
     name: Python ${{ matrix.python }}

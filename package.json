@@ -1,6 +1,6 @@
 {
   "name": "@knowall-ai/agent-pulse",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Report what your AI agents do: AgentActivity events to Application Insights, shown in the KnowAll Agents Portal",
   "license": "MIT",
   "author": "KnowAll AI Ltd",
@@ -42,11 +42,12 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cjs.json && node scripts/mark-cjs.mjs",
-    "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run && node scripts/smoke-modules.mjs && tsc -p test/cjs-consumer",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "check": "npm run lint && npm run typecheck && npm test",
+    "prepack": "npm run build",
+    "check:dist": "npm run build && git diff --exit-code -- dist"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

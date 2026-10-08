@@ -8,7 +8,7 @@ anything below.
 
 - `spec/AGENT-ACTIVITY.md`: the contract, and the source of truth. `spec/test-vectors.json`:
   inputs and expected outputs shared by all three test suites. `spec/examples/`: example envelopes.
-- Repo root: the TypeScript package `@knowall-ai/agent-pulse` (`src/`, `test/`, vitest).
+- Repo root: the TypeScript package `@knowall-ai/agent-pulse` (`src/`, `test/`, vitest). `dist/` (ESM and `dist/cjs`) is committed so git installs need no build: run `npm run build` and commit `dist/` with every `src/` change; CI fails if they differ.
 - `python/`: the `agent-pulse` package, import `agent_pulse` (pytest).
 - `dotnet/`: `KnowAll.AgentPulse` (net8.0) and its xunit tests.
 

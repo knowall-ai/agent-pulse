@@ -50,6 +50,7 @@ fix in one language alone will be sent back.
 ```
 # TypeScript (Node 22.12+ for the dev tooling; the library itself runs on Node 20+)
 npm ci
+npm run build && git add dist   # dist/ is committed: rebuild it with every src/ change
 npm run check            # eslint, tsc --noEmit, vitest, import/require smoke test, CommonJS consumer typecheck
 
 # Python 3.10+

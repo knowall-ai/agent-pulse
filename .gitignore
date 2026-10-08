@@ -1,5 +1,5 @@
 node_modules/
-dist/
+# dist/ at the root is committed: git installs (npm, bun, pnpm) get a ready-built package
 coverage/
 *.tgz
 .env
