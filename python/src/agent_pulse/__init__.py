@@ -19,7 +19,7 @@ from .pulse import (
     validate_activity_type,
 )
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 __all__ = [
     "ACTIVITY_CHANNELS",

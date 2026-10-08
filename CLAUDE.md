@@ -17,6 +17,9 @@ anything below.
 - **Keep the three implementations identical in behaviour.** A change in one language is a change
   in all three plus a test vector, in the same commit. Port regexes faithfully: Python uses
   `re.ASCII` and .NET `RegexOptions.ECMAScript` so `\b`, `\d` and `\s` match JavaScript.
+  Patterns that find **names** (known names, titles, relationships, greetings) are the exception:
+  they are Unicode-aware (`u` flag, `\p{Lu}`/`\p{Ll}`, and letter/number lookarounds instead of
+  `\b`) in all three, so accented and non-Latin names are masked.
 - **Changing the contract** means updating the spec, all three implementations and the vectors
   together, and bumping `schemaVersion` unless the change is additive and optional.
 - **No runtime dependencies** in any implementation: global `fetch` / `urllib` / `HttpClient` only.

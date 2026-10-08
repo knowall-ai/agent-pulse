@@ -16,7 +16,9 @@ namespace KnowAll.AgentPulse;
 /// not caught. Run named-entity recognition (e.g. Azure AI Language PII detection, in your own tenant) as
 /// well before you turn samples on for real users, and never sample sensitive items.
 /// </para>
-/// Patterns use <see cref="RegexOptions.ECMAScript"/> so they behave as the TypeScript originals do;
+/// Patterns use <see cref="RegexOptions.ECMAScript"/> so they behave as the TypeScript originals do, except the
+/// ones that find names (known names, titles, relationships, greetings): those are Unicode-aware, as the
+/// TypeScript ones are with the <c>u</c> flag, so "Éabha" and "Ní Bhriain" are masked like "Alex".
 /// spec/test-vectors.json keeps all three implementations in step.
 /// </remarks>
 public static class PiiMask
@@ -26,6 +28,14 @@ public static class PiiMask
 
     private const RegexOptions Js = RegexOptions.ECMAScript | RegexOptions.CultureInvariant;
     private const RegexOptions JsI = Js | RegexOptions.IgnoreCase;
+    // Unicode-aware, for patterns that find names (the TypeScript "u" flag).
+    private const RegexOptions Uni = RegexOptions.CultureInvariant;
+    private const RegexOptions UniI = Uni | RegexOptions.IgnoreCase;
+
+    // No letter, number or _ on either side of a name, in place of \b, which is ASCII-only in JavaScript
+    // and under ECMAScript: it finds no boundary before "É" in "Éabha" and finds one after "M" in "Máine".
+    private const string NotAfterWord = @"(?<![\p{L}\p{N}_])";
+    private const string NotBeforeWord = @"(?![\p{L}\p{N}_])";
 
     private static readonly Regex Email = new(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", Js);
 
@@ -41,12 +51,18 @@ public static class PiiMask
         (new Regex(
             @"\b\d{1,4}\s+[A-Z][A-Za-z']+(?:\s+[A-Z][A-Za-z']+){0,3}\s+" +
             @"(?:Street|St|Road|Rd|Avenue|Ave|Lane|Ln|Drive|Dr|Gardens|Close|Court|Crescent|Terrace|Way|Place|Park)\b", Js), null),
-        (new Regex(@"\b(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", Js), 1),
+        // Names in the three cue patterns below are Unicode letters, so "Dear Éabha" and "Mrs Ní Bhriain" are
+        // caught. A title may be followed by a one-letter initial or particle ("Mr Ó Briain"). Each name word runs
+        // on to the end of the word, so "Dear O'Brien" or "Dear Éabha张伟" leaves no tail.
         (new Regex(
-            @"\b[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)" +
-            @"\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", Js), 1),
+            NotAfterWord + @"(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:\p{Lu}\s+)?\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)", Uni), 1),
+        (new Regex(
+            NotAfterWord + @"[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)" +
+            @"\s+(\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)", Uni), 1),
         // Greetings: "Hi Alex," / "Dear Alex Morgan": the name, not the greeting.
-        (new Regex(@"\b(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+([A-Z][a-z'-]+(?:\s+[A-Z][a-z'-]+)?)", Js), 1),
+        (new Regex(
+            NotAfterWord + @"(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+(\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*(?:\s+\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*)?)",
+            Uni), 1),
     ];
 
     private static readonly Regex SignOff = new(
@@ -54,7 +70,7 @@ public static class PiiMask
         @"|best|cheers|all the best|yours sincerely|yours faithfully|sincerely)[\s,.!]*$", JsI);
 
     private static readonly Regex TokenSplit = new(@"[\s._+-]+", Js);
-    private static readonly Regex HasLetter = new("[A-Za-z]", Js);
+    private static readonly Regex HasLetter = new(@"\p{L}", Uni);
 
     /// <summary>
     /// Mask personal data in <paramref name="text"/> with <c>*****</c>. <paramref name="known"/> carries names
@@ -67,7 +83,7 @@ public static class PiiMask
 
         foreach (var token in KnownTokens(known ?? []))
         {
-            output = Regex.Replace(output, $@"\b{EscapeJs(token)}\b", Mask, JsI);
+            output = Regex.Replace(output, NotAfterWord + EscapeJs(token) + NotBeforeWord, Mask, UniI);
         }
 
         foreach (var (regex, group) in Patterns)
@@ -103,7 +119,7 @@ public static class PiiMask
         return string.Join('\n', lines);
     }
 
-    /// <summary>The whole entry plus each part of 2+ characters that contains a letter, longest first.</summary>
+    /// <summary>The whole entry plus each part of 2+ characters that contains a (Unicode) letter, longest first.</summary>
     private static IEnumerable<string> KnownTokens(IEnumerable<string> known)
     {
         var tokens = new List<string>();

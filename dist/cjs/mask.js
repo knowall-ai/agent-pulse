@@ -40,14 +40,21 @@ const PATTERNS = [
     {
         regex: /\b\d{1,4}\s+[A-Z][A-Za-z']+(?:\s+[A-Z][A-Za-z']+){0,3}\s+(?:Street|St|Road|Rd|Avenue|Ave|Lane|Ln|Drive|Dr|Gardens|Close|Court|Crescent|Terrace|Way|Place|Park)\b/g,
     },
-    { regex: /\b(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/g, group: 1 },
+    // Names in the three cue patterns below are Unicode letters (\p{Lu}, \p{Ll}), so "Dear Éabha"
+    // and "Mrs Ní Bhriain" are caught, and a lookbehind stands in for \b, which is ASCII-only in
+    // JavaScript. A title may be followed by a one-letter initial or particle ("Mr Ó Briain"). Each
+    // name word runs on to the end of the word, so "Dear O'Brien" or "Dear Éabha张伟" leaves no tail.
     {
-        regex: /\b[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/g,
+        regex: /(?<![\p{L}\p{N}_])(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:\p{Lu}\s+)?\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)/gu,
+        group: 1,
+    },
+    {
+        regex: /(?<![\p{L}\p{N}_])[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)\s+(\p{Lu}\p{Ll}+[\p{L}\p{N}_]*(?:\s+\p{Lu}\p{Ll}+[\p{L}\p{N}_]*)?)/gu,
         group: 1,
     },
     // Greetings: "Hi Alex," / "Dear Alex Morgan": the name, not the greeting.
     {
-        regex: /\b(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+([A-Z][a-z'-]+(?:\s+[A-Z][a-z'-]+)?)/g,
+        regex: /(?<![\p{L}\p{N}_])(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+(\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*(?:\s+\p{Lu}[\p{Ll}'-]+[\p{L}\p{N}_]*)?)/gu,
         group: 1,
     },
 ];
@@ -69,10 +76,16 @@ function maskSignatures(text) {
     }
     return lines.join("\n");
 }
+// Word boundaries for known names. JavaScript's \b only knows ASCII, so it finds no boundary
+// before "É" in "Éabha" (the name leaks) and one after "M" in "Máine" (a fragment is masked).
+// These lookarounds treat every Unicode letter and number as part of a word; use them with "u".
+const NOT_AFTER_WORD = "(?<![\\p{L}\\p{N}_])";
+const NOT_BEFORE_WORD = "(?![\\p{L}\\p{N}_])";
+/** Escapes only syntax characters, so the result is also valid under the "u" flag. */
 function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-/** Name and address tokens worth masking: the whole entry plus each part of 2+ chars with a letter. */
+/** Name and address tokens worth masking: the whole entry plus each part of 2+ chars with a (Unicode) letter. */
 function knownTokens(known) {
     const tokens = new Set();
     for (const entry of known) {
@@ -81,7 +94,7 @@ function knownTokens(known) {
         tokens.add(entry.trim());
         const local = entry.includes("@") ? entry.split("@")[0] : entry;
         for (const part of local.split(/[\s._+-]+/)) {
-            if (part.length >= 2 && /[A-Za-z]/.test(part))
+            if (part.length >= 2 && /\p{L}/u.test(part))
                 tokens.add(part);
         }
     }
@@ -99,7 +112,7 @@ function knownTokens(known) {
 function maskPii(text, known = []) {
     let out = text.replace(new RegExp(EMAIL.source, EMAIL.flags), exports.MASK);
     for (const token of knownTokens(known)) {
-        out = out.replace(new RegExp(`\\b${escapeRegExp(token)}\\b`, "gi"), exports.MASK);
+        out = out.replace(new RegExp(`${NOT_AFTER_WORD}${escapeRegExp(token)}${NOT_BEFORE_WORD}`, "giu"), exports.MASK);
     }
     for (const { regex, group } of PATTERNS) {
         out = out.replace(new RegExp(regex.source, regex.flags), (match, ...groups) => {

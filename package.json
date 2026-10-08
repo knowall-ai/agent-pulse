@@ -1,6 +1,6 @@
 {
   "name": "@knowall-ai/agent-pulse",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Report what your AI agents do: AgentActivity events to Application Insights, shown in the KnowAll Agents Portal",
   "license": "MIT",
   "author": "KnowAll AI Ltd",

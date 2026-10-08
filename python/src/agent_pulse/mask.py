@@ -17,17 +17,43 @@ it") are not caught. Run named-entity recognition (e.g. Azure AI Language PII de
 own tenant) as well before you turn samples on for real users, and never sample sensitive items.
 
 Mirrors the TypeScript implementation; spec/test-vectors.json keeps them in step. Patterns use
-``re.ASCII`` so ``\\b`` and ``\\d`` behave as they do in JavaScript.
+``re.ASCII`` so ``\\b`` and ``\\d`` behave as they do in JavaScript, except the ones that find names
+(known names, titles, relationships, greetings): those are Unicode-aware, as the TypeScript ones
+are with the ``u`` flag, so "Éabha" and "Ní Bhriain" are masked like "Alex".
 """
 
 from __future__ import annotations
 
 import re
+import sys
+import unicodedata
+from itertools import groupby
 from typing import Iterable
 
 MASK = "*****"
 
 _A = re.ASCII
+
+
+def _letter_classes(*categories: str) -> list[str]:
+    """Character class bodies for Unicode categories, standing in for JavaScript's ``\\p{Lu}`` etc."""
+    ranges: dict[str, list[str]] = {c: [] for c in categories}
+    # Every cased letter is below U+20000 (planes 2 and up hold ideographs and private use).
+    code_points = range(min(sys.maxunicode, 0x1FFFF) + 1)
+    for category, run in groupby(code_points, key=lambda cp: unicodedata.category(chr(cp))):
+        if category in ranges:
+            first = last = next(run)
+            for last in run:
+                pass
+            ranges[category].append(f"\\U{first:08x}-\\U{last:08x}")
+    return ["".join(ranges[c]) for c in categories]
+
+
+_LU, _LL = _letter_classes("Lu", "Ll")  # \p{Lu}, \p{Ll}
+# Unicode \w (letters, numbers, _) on either side of a name, in place of JavaScript's \b, which is
+# ASCII-only: \b finds no boundary before "É" in "Éabha" and finds one after "M" in "Máine".
+_NOT_AFTER_WORD = r"(?<!\w)"
+_NOT_BEFORE_WORD = r"(?!\w)"
 _EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", _A)
 
 _PATTERNS: list[tuple[re.Pattern[str], int | None]] = [
@@ -51,17 +77,31 @@ _PATTERNS: list[tuple[re.Pattern[str], int | None]] = [
         ),
         None,
     ),
-    (re.compile(r"\b(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", _A), 1),
+    # Names in the three cue patterns below are Unicode letters, so "Dear Éabha" and "Mrs Ní Bhriain"
+    # are caught. A title may be followed by a one-letter initial or particle ("Mr Ó Briain"). Each
+    # name word runs on to the end of the word, so "Dear O'Brien" or "Dear Éabha张伟" leaves no tail.
     (
         re.compile(
-            r"\b[Mm]y\s+(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)"
-            r"\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
-            _A,
+            rf"{_NOT_AFTER_WORD}(?:Mr|Mrs|Ms|Miss|Dr)\.?\s+((?:[{_LU}]\s+)?[{_LU}][{_LL}]+\w*(?:\s+[{_LU}][{_LL}]+\w*)?)"
+        ),
+        1,
+    ),
+    (
+        re.compile(
+            rf"{_NOT_AFTER_WORD}[Mm]y\s+"
+            r"(?:son|daughter|wife|husband|partner|father|mother|mum|dad|brother|sister|grandson|granddaughter)"
+            rf"\s+([{_LU}][{_LL}]+\w*(?:\s+[{_LU}][{_LL}]+\w*)?)"
         ),
         1,
     ),
     # Greetings: "Hi Alex," / "Dear Alex Morgan": the name, not the greeting.
-    (re.compile(r"\b(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)\s+([A-Z][a-z'-]+(?:\s+[A-Z][a-z'-]+)?)", _A), 1),
+    (
+        re.compile(
+            rf"{_NOT_AFTER_WORD}(?:Hi|Hello|Hey|Dear|Morning|Afternoon|Evening)"
+            rf"\s+([{_LU}][{_LL}'-]+\w*(?:\s+[{_LU}][{_LL}'-]+\w*)?)"
+        ),
+        1,
+    ),
 ]
 
 _SIGN_OFF = re.compile(
@@ -90,7 +130,7 @@ def _mask_signatures(text: str) -> str:
 
 
 def _known_tokens(known: Iterable[str]) -> list[str]:
-    """The whole entry plus each part of 2+ characters that contains a letter, longest first."""
+    """The whole entry plus each part of 2+ characters that contains a (Unicode) letter, longest first."""
     tokens: dict[str, None] = {}
     for entry in known:
         if not entry or not entry.strip():
@@ -98,7 +138,7 @@ def _known_tokens(known: Iterable[str]) -> list[str]:
         tokens[entry.strip()] = None
         local = entry.split("@")[0] if "@" in entry else entry
         for part in re.split(r"[\s._+-]+", local):
-            if len(part) >= 2 and re.search(r"[A-Za-z]", part):
+            if len(part) >= 2 and any(ch.isalpha() for ch in part):
                 tokens[part] = None
     return sorted((t for t in tokens if len(t) >= 2), key=len, reverse=True)
 
@@ -115,7 +155,8 @@ def mask_pii(text: str, known: Iterable[str] = ()) -> str:
     out = _EMAIL.sub(MASK, text)
 
     for token in _known_tokens(known):
-        out = re.sub(rf"\b{re.escape(token)}\b", MASK, out, flags=re.IGNORECASE | re.ASCII)
+        # Unicode, not ASCII, so IGNORECASE also folds "É" to "é".
+        out = re.sub(rf"{_NOT_AFTER_WORD}{re.escape(token)}{_NOT_BEFORE_WORD}", MASK, out, flags=re.IGNORECASE)
 
     for pattern, group in _PATTERNS:
 

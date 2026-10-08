@@ -685,6 +685,89 @@
         "J"
       ],
       "expected": "Ring ***** about it"
+    },
+    {
+      "text": "Hi, Éabha here",
+      "known": [
+        "Éabha Murphy"
+      ],
+      "expected": "Hi, ***** here"
+    },
+    {
+      "text": "Áine rang, then ÁINE rang again",
+      "known": [
+        "Áine Kelly"
+      ],
+      "expected": "***** rang, then ***** rang again"
+    },
+    {
+      "text": "Órla wrote to Siún about it",
+      "known": [
+        "Órla Byrne",
+        "Siún Walsh"
+      ],
+      "expected": "***** wrote to ***** about it"
+    },
+    {
+      "text": "Ask Chloé.",
+      "known": [
+        "Chloé Martin"
+      ],
+      "expected": "Ask *****."
+    },
+    {
+      "text": "Ζωή wrote",
+      "known": [
+        "Ζωή Παππά"
+      ],
+      "expected": "***** wrote"
+    },
+    {
+      "text": "Dear Éabha,\nYour order shipped.",
+      "known": [],
+      "expected": "Dear *****,\nYour order shipped."
+    },
+    {
+      "text": "Ask my daughter Órla",
+      "known": [],
+      "expected": "Ask my daughter *****"
+    },
+    {
+      "text": "Mrs Ní Bhriain and Mr Ó Briain called",
+      "known": [],
+      "expected": "Mrs ***** and Mr ***** called"
+    },
+    {
+      "text": "Mr Ó Briain called about Ó Briain's order",
+      "known": [
+        "Ó Briain"
+      ],
+      "expected": "Mr ***** called about *****'s order"
+    },
+    {
+      "text": "Órla O'Neill-Byrne signed; O'Neill and Byrne agreed",
+      "known": [
+        "Órla O'Neill-Byrne"
+      ],
+      "expected": "***** signed; ***** and ***** agreed"
+    },
+    {
+      "text": "Seánsen rang Máine",
+      "known": [
+        "Seán",
+        "Áine"
+      ],
+      "expected": "Seánsen rang Máine"
+    },
+    {
+      "text": "Dear Éabha张伟, thanks",
+      "known": [],
+      "expected": "Dear *****, thanks"
+    },
+    {
+      "text": "Hi O'Brien, Mr SmithJones and my son Sam2 called",
+      "known": [],
+      "expected": "Hi *****, Mr ***** and my son ***** called"
     }
   ],
   "comparison": [
