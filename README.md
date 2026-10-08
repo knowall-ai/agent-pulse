@@ -70,7 +70,7 @@ await pulse.flush(); // before a short-lived process exits
 `createPulse({ connectionString?, agentId, actor?, samples?, fetch?, warn?, now? })` returns
 `{ emit, flush }`. Also exported: `noopPulse`, `maskPii`, `activityIdFrom`,
 `validateActivityType`, `toEnvelope`, and the comparison helpers `similarity`, `editDistance`,
-`stripQuoted` and `SENT_AS_IS`. ESM with types, zero runtime dependencies.
+`stripQuoted` and `SENT_AS_IS`. ESM and CommonJS builds with types (`import` or `require`, Node 20+), zero runtime dependencies.
 
 ### Python (3.10+)
 
