@@ -1,6 +1,6 @@
 {
   "name": "@knowall-ai/agent-pulse",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Report what your AI agents do: AgentActivity events to Application Insights, shown in the KnowAll Agents Portal",
   "license": "MIT",
   "author": "KnowAll AI Ltd",
@@ -10,27 +10,37 @@
     "url": "git+https://github.com/knowall-ai/agent-pulse.git"
   },
   "bugs": "https://github.com/knowall-ai/agent-pulse/issues",
-  "keywords": ["ai-agents", "application-insights", "azure", "observability", "telemetry"],
+  "keywords": [
+    "ai-agents",
+    "application-insights",
+    "azure",
+    "observability",
+    "telemetry"
+  ],
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/cjs/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "spec/AGENT-ACTIVITY.md"],
+  "files": [
+    "dist",
+    "spec/AGENT-ACTIVITY.md"
+  ],
   "engines": {
     "node": ">=20"
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cjs.json && node scripts/mark-cjs.mjs",
     "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run && node scripts/smoke-modules.mjs",
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {
@@ -40,5 +50,6 @@
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.0.0",
     "vitest": "^5.0.3"
-  }
+  },
+  "module": "./dist/index.js"
 }
