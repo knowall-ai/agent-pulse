@@ -1,0 +1,44 @@
+{
+  "name": "@knowall-ai/agent-pulse",
+  "version": "0.1.0",
+  "description": "Report what your AI agents do: AgentActivity events to Application Insights, shown in the KnowAll Agents Portal",
+  "license": "MIT",
+  "author": "KnowAll AI Ltd",
+  "homepage": "https://github.com/knowall-ai/agent-pulse#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/knowall-ai/agent-pulse.git"
+  },
+  "bugs": "https://github.com/knowall-ai/agent-pulse/issues",
+  "keywords": ["ai-agents", "application-insights", "azure", "observability", "telemetry"],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "spec/AGENT-ACTIVITY.md"],
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^5.0.3"
+  }
+}

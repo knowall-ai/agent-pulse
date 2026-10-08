@@ -1,0 +1,767 @@
+{
+  "$comment": "Shared test vectors for every agent-pulse implementation. A value {repeat, times[, suffix]} means the string repeated `times` times then `suffix`. Measurement values \"NaN\"/\"Infinity\" are the IEEE values. Regenerate expectations only together with spec/AGENT-ACTIVITY.md and all three implementations.",
+  "schemaVersion": "1",
+  "envelopes": [
+    {
+      "name": "minimal required fields",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "00000000-0000-0000-0000-000000000000",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "chat.answered",
+        "title": "Answered a question",
+        "level": "success",
+        "activityId": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "00000000-0000-0000-0000-000000000000",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "chat.answered",
+          "title": "Answered a question",
+          "level": "success",
+          "activityId": "1111111111111111111111111111111111111111111111111111111111111111"
+        },
+        "measurements": {}
+      }
+    },
+    {
+      "name": "all optional fields, measurements and default actor",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z",
+        "actor": "acme-helpdesk"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "Drafted reply · billing",
+        "level": "success",
+        "activityId": "2222222222222222222222222222222222222222222222222222222222222222",
+        "channel": "email",
+        "subject": "billing",
+        "detail": "confidence 0.91",
+        "url": "https://example.com/items/42",
+        "relatedActivityId": "3333333333333333333333333333333333333333333333333333333333333333",
+        "occurredAt": "2026-10-08T09:58:12.345Z",
+        "measurements": {
+          "confidence": 0.91,
+          "sensitive": 0
+        }
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.drafted",
+          "title": "Drafted reply · billing",
+          "level": "success",
+          "activityId": "2222222222222222222222222222222222222222222222222222222222222222",
+          "subject": "billing",
+          "detail": "confidence 0.91",
+          "actor": "acme-helpdesk",
+          "url": "https://example.com/items/42",
+          "relatedActivityId": "3333333333333333333333333333333333333333333333333333333333333333",
+          "channel": "email",
+          "occurredAt": "2026-10-08T09:58:12.345Z"
+        },
+        "measurements": {
+          "confidence": 0.91,
+          "sensitive": 0
+        }
+      }
+    },
+    {
+      "name": "activity actor overrides the default actor",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z",
+        "actor": "acme-helpdesk"
+      },
+      "activity": {
+        "activityType": "standup.posted",
+        "title": "Posted the stand-up",
+        "level": "info",
+        "activityId": "4444",
+        "actor": "scheduler"
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "standup.posted",
+          "title": "Posted the stand-up",
+          "level": "info",
+          "activityId": "4444",
+          "actor": "scheduler"
+        },
+        "measurements": {}
+      }
+    },
+    {
+      "name": "backfilled event keeps its real time",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "Drafted reply",
+        "level": "success",
+        "activityId": "5555",
+        "occurredAt": "2026-09-01T08:00:00Z",
+        "backfilled": true,
+        "channel": "email"
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.drafted",
+          "title": "Drafted reply",
+          "level": "success",
+          "activityId": "5555",
+          "channel": "email",
+          "occurredAt": "2026-09-01T08:00:00Z",
+          "backfilled": "true"
+        },
+        "measurements": {}
+      }
+    },
+    {
+      "name": "backfilled false and empty optional strings are omitted",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.skipped",
+        "title": "Skipped an email",
+        "level": "info",
+        "activityId": "6666",
+        "backfilled": false,
+        "subject": "",
+        "detail": ""
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.skipped",
+          "title": "Skipped an email",
+          "level": "info",
+          "activityId": "6666"
+        },
+        "measurements": {}
+      }
+    },
+    {
+      "name": "non-finite measurements are dropped",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "knowledge.gap",
+        "title": "No answer in the knowledge base",
+        "level": "warning",
+        "activityId": "7777",
+        "measurements": {
+          "passages": 0,
+          "bad": "NaN"
+        }
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "knowledge.gap",
+          "title": "No answer in the knowledge base",
+          "level": "warning",
+          "activityId": "7777"
+        },
+        "measurements": {
+          "passages": 0
+        }
+      }
+    },
+    {
+      "name": "email.compared judges an earlier draft",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T18:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.compared",
+        "title": "Reply sent with light edits",
+        "level": "info",
+        "activityId": "8888",
+        "relatedActivityId": "2222222222222222222222222222222222222222222222222222222222222222",
+        "channel": "email",
+        "measurements": {
+          "replyFound": 1,
+          "similarity": 0.84,
+          "editDistance": 12,
+          "sentAsIs": 0
+        }
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T18:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.compared",
+          "title": "Reply sent with light edits",
+          "level": "info",
+          "activityId": "8888",
+          "relatedActivityId": "2222222222222222222222222222222222222222222222222222222222222222",
+          "channel": "email"
+        },
+        "measurements": {
+          "replyFound": 1,
+          "similarity": 0.84,
+          "editDistance": 12,
+          "sentAsIs": 0
+        }
+      }
+    },
+    {
+      "name": "samples are dropped unless samples is on",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "Drafted reply",
+        "level": "success",
+        "activityId": "9999",
+        "sampleRequest": "Hi, my email is alex@example.com",
+        "sampleResponse": "Thanks Alex"
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.drafted",
+          "title": "Drafted reply",
+          "level": "success",
+          "activityId": "9999"
+        },
+        "measurements": {}
+      }
+    },
+    {
+      "name": "samples are masked when samples is on",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z",
+        "samples": true
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "Drafted reply",
+        "level": "success",
+        "activityId": "aaaa",
+        "knownNames": [
+          "Alex Morgan",
+          "alex.morgan@example.com"
+        ],
+        "sampleRequest": "Hello, I'm Alex Morgan. Please call me on 07700 900123.",
+        "sampleResponse": "Hi Alex,\n\nYour order is on its way.\n\nKind regards\nSam Taylor\nSupport team"
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.drafted",
+          "title": "Drafted reply",
+          "level": "success",
+          "activityId": "aaaa",
+          "sampleRequest": "Hello, I'm *****. Please call me on *****.",
+          "sampleResponse": "Hi *****,\n\nYour order is on its way.\n\nKind regards\n*****\n*****"
+        },
+        "measurements": {}
+      }
+    },
+    {
+      "name": "samples are truncated after masking",
+      "options": {
+        "agentId": "acme-helpdesk",
+        "instrumentationKey": "ikey-1",
+        "time": "2026-10-08T10:00:00.000Z",
+        "samples": true
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "Drafted reply",
+        "level": "success",
+        "activityId": "bbbb",
+        "sampleResponse": {
+          "repeat": "x",
+          "times": 10000
+        }
+      },
+      "expected": {
+        "name": "Microsoft.ApplicationInsights.Event",
+        "time": "2026-10-08T10:00:00.000Z",
+        "iKey": "ikey-1",
+        "tags": {
+          "ai.cloud.role": "acme-helpdesk"
+        },
+        "baseType": "EventData",
+        "eventName": "AgentActivity",
+        "ver": 2,
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.drafted",
+          "title": "Drafted reply",
+          "level": "success",
+          "activityId": "bbbb",
+          "sampleResponse": {
+            "repeat": "x",
+            "times": 3499,
+            "suffix": "…"
+          }
+        },
+        "measurements": {}
+      }
+    },
+    {
+      "name": "rejects an invalid activityType",
+      "options": {
+        "agentId": "a",
+        "instrumentationKey": "k",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "Email.Drafted",
+        "title": "t",
+        "level": "info",
+        "activityId": "x"
+      },
+      "error": true
+    },
+    {
+      "name": "rejects an invalid level",
+      "options": {
+        "agentId": "a",
+        "instrumentationKey": "k",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "t",
+        "level": "critical",
+        "activityId": "x"
+      },
+      "error": true
+    },
+    {
+      "name": "rejects an invalid channel",
+      "options": {
+        "agentId": "a",
+        "instrumentationKey": "k",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "t",
+        "level": "info",
+        "activityId": "x",
+        "channel": "fax"
+      },
+      "error": true
+    },
+    {
+      "name": "rejects a missing title",
+      "options": {
+        "agentId": "a",
+        "instrumentationKey": "k",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "",
+        "level": "info",
+        "activityId": "x"
+      },
+      "error": true
+    },
+    {
+      "name": "rejects a missing activityId",
+      "options": {
+        "agentId": "a",
+        "instrumentationKey": "k",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "t",
+        "level": "info",
+        "activityId": ""
+      },
+      "error": true
+    },
+    {
+      "name": "rejects a missing agentId",
+      "options": {
+        "agentId": "",
+        "instrumentationKey": "k",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "t",
+        "level": "info",
+        "activityId": "x"
+      },
+      "error": true
+    },
+    {
+      "name": "rejects occurredAt without a Z",
+      "options": {
+        "agentId": "a",
+        "instrumentationKey": "k",
+        "time": "2026-10-08T10:00:00.000Z"
+      },
+      "activity": {
+        "activityType": "email.drafted",
+        "title": "t",
+        "level": "info",
+        "activityId": "x",
+        "occurredAt": "2026-10-08T10:00:00+01:00"
+      },
+      "error": true
+    }
+  ],
+  "activityTypes": {
+    "valid": [
+      "email.drafted",
+      "email.skipped",
+      "email.failed",
+      "email.compared",
+      "chat.answered",
+      "chat.escalated",
+      "knowledge.gap",
+      "call.joined",
+      "meeting.attended",
+      "email.sent",
+      "standup.posted",
+      "a1.b2",
+      "email.reply_sent",
+      "x.y.z"
+    ],
+    "invalid": [
+      "Email.Drafted",
+      "drafted",
+      "email.",
+      ".drafted",
+      "email drafted",
+      "email..drafted",
+      "email-drafted.x",
+      "email.Drafted",
+      "",
+      "email.drafted!",
+      "e_mail.drafted"
+    ]
+  },
+  "activityIdFrom": [
+    {
+      "input": "AAMkAGI2TG93AAA=",
+      "expected": "7081fd80a08ef08cf87e064c4735076fe33fe9f33fe3ee80ff5fcd0a6347cb56"
+    },
+    {
+      "input": "hello",
+      "expected": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+    },
+    {
+      "input": "",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "connectionStrings": [
+    {
+      "input": "InstrumentationKey=ikey-1;IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/",
+      "expected": {
+        "instrumentationKey": "ikey-1",
+        "ingestionEndpoint": "https://uksouth-1.in.applicationinsights.azure.com"
+      }
+    },
+    {
+      "input": "instrumentationkey=ikey-2",
+      "expected": {
+        "instrumentationKey": "ikey-2",
+        "ingestionEndpoint": "https://dc.services.visualstudio.com"
+      }
+    },
+    {
+      "input": " InstrumentationKey = ikey-3 ; IngestionEndpoint = https://example.in.applicationinsights.azure.com// ",
+      "expected": {
+        "instrumentationKey": "ikey-3",
+        "ingestionEndpoint": "https://example.in.applicationinsights.azure.com"
+      }
+    },
+    {
+      "input": "IngestionEndpoint=https://x.example.com/",
+      "expected": null
+    },
+    {
+      "input": "",
+      "expected": null
+    }
+  ],
+  "masking": [
+    {
+      "text": "Contact me at alex.morgan@example.com please",
+      "known": [],
+      "expected": "Contact me at ***** please"
+    },
+    {
+      "text": "Call 07700 900123 or +44 20 7946 0958",
+      "known": [],
+      "expected": "Call ***** or *****"
+    },
+    {
+      "text": "I live at 12 Acacia Avenue, SW1A 1AA",
+      "known": [],
+      "expected": "I live at *****, *****"
+    },
+    {
+      "text": "Account 1234567, born 03/04/2011, aged 15",
+      "known": [],
+      "expected": "Account *****, born *****, *****"
+    },
+    {
+      "text": "I was born on 3rd March 2011.",
+      "known": [],
+      "expected": "I was *****."
+    },
+    {
+      "text": "Mrs Smith and Dr. Jones spoke to my son Sam Taylor",
+      "known": [],
+      "expected": "Mrs ***** and Dr. ***** spoke to my son *****"
+    },
+    {
+      "text": "Hi Alex,\nThanks for writing.",
+      "known": [],
+      "expected": "Hi *****,\nThanks for writing."
+    },
+    {
+      "text": "Dear Alex Morgan, welcome.",
+      "known": [],
+      "expected": "Dear *****, welcome."
+    },
+    {
+      "text": "Order shipped.\n\nKind regards\nSam Taylor\nSupport team\nAcme Ltd",
+      "known": [],
+      "expected": "Order shipped.\n\nKind regards\n*****\n*****\nAcme Ltd"
+    },
+    {
+      "text": "Thanks,\n\nAlex",
+      "known": [],
+      "expected": "Thanks,\n\n*****"
+    },
+    {
+      "text": "Alex said ALEX would ring. alex.morgan replied.",
+      "known": [
+        "Alex Morgan",
+        "alex.morgan@example.com"
+      ],
+      "expected": "***** said ***** would ring. *****.***** replied."
+    },
+    {
+      "text": "Hi Alex, mail me at alex@example.com",
+      "known": [
+        "Alex"
+      ],
+      "expected": "Hi *****, mail me at *****"
+    },
+    {
+      "text": "Nothing personal here: the order ships Tuesday.",
+      "known": [],
+      "expected": "Nothing personal here: the order ships Tuesday."
+    },
+    {
+      "text": "Already masked: ***** and *****",
+      "known": [],
+      "expected": "Already masked: ***** and *****"
+    },
+    {
+      "text": "Ring Jo about it",
+      "known": [
+        "Jo",
+        "",
+        "J"
+      ],
+      "expected": "Ring ***** about it"
+    }
+  ],
+  "comparison": [
+    {
+      "a": "Thanks for your email. Your order ships on Tuesday.",
+      "b": "Thanks for your email. Your order ships on Tuesday.",
+      "similarity": 1,
+      "editDistance": 0,
+      "sentAsIs": true
+    },
+    {
+      "a": "Thanks for your email. Your order ships on Tuesday.",
+      "b": "thanks for your email your order ships on tuesday",
+      "similarity": 1,
+      "editDistance": 0,
+      "sentAsIs": true
+    },
+    {
+      "a": "Thanks for your email. Your order ships on Tuesday.",
+      "b": "Thanks for your email. Your order ships on Wednesday, sorry for the delay.",
+      "similarity": 0.7272727272727273,
+      "editDistance": 6,
+      "sentAsIs": false
+    },
+    {
+      "a": "",
+      "b": "",
+      "similarity": 1,
+      "editDistance": 0,
+      "sentAsIs": true
+    },
+    {
+      "a": "Hello there",
+      "b": "",
+      "similarity": 0,
+      "editDistance": 2,
+      "sentAsIs": false
+    },
+    {
+      "a": "apple banana cherry",
+      "b": "cherry banana apple",
+      "similarity": 0.3333333333333333,
+      "editDistance": 4,
+      "sentAsIs": false
+    },
+    {
+      "a": "Café prices: €5",
+      "b": "café prices 5",
+      "similarity": 1,
+      "editDistance": 0,
+      "sentAsIs": true
+    }
+  ],
+  "stripQuoted": [
+    {
+      "input": "Thanks, that works.\n\nFrom: Support <help@example.com>\nSent: Monday\nOriginal text",
+      "expected": "Thanks, that works."
+    },
+    {
+      "input": "Sounds good.\n\nOn Mon, 5 Oct 2026 at 10:00, Alex Morgan wrote:\n> earlier",
+      "expected": "Sounds good."
+    },
+    {
+      "input": "Agreed.\n-----Original Message-----\nold",
+      "expected": "Agreed."
+    },
+    {
+      "input": "Yes please.\n\n________________________________\nFrom: x",
+      "expected": "Yes please."
+    },
+    {
+      "input": "  No quote here.  ",
+      "expected": "No quote here."
+    },
+    {
+      "input": "from: lower-case header counts too\nok",
+      "expected": ""
+    }
+  ]
+}

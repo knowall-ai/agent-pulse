@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Microsoft.ApplicationInsights.Event",
+    "time": "2026-10-08T10:00:00.000Z",
+    "iKey": "00000000-0000-0000-0000-000000000000",
+    "tags": {
+      "ai.cloud.role": "acme-helpdesk"
+    },
+    "data": {
+      "baseType": "EventData",
+      "baseData": {
+        "ver": 2,
+        "name": "AgentActivity",
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "chat.answered",
+          "title": "Answered a question · opening hours",
+          "level": "success",
+          "activityId": "4d533e70fb6e7ef98a4ce90ee5ac0685e09bca3d4c9d94a5e7025e559b4ea074",
+          "subject": "opening hours",
+          "actor": "acme-helpdesk",
+          "channel": "teams"
+        },
+        "measurements": {}
+      }
+    }
+  }
+]

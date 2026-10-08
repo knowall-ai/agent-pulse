@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Microsoft.ApplicationInsights.Event",
+    "time": "2026-10-08T10:00:00.000Z",
+    "iKey": "00000000-0000-0000-0000-000000000000",
+    "tags": {
+      "ai.cloud.role": "acme-helpdesk"
+    },
+    "data": {
+      "baseType": "EventData",
+      "baseData": {
+        "ver": 2,
+        "name": "AgentActivity",
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.failed",
+          "title": "Gave up on an email",
+          "level": "warning",
+          "activityId": "2a9b11bee5ac81cf948ece721c97b8dbe0dfb3af46378bff8663aa31425bc800",
+          "detail": "graph-403",
+          "actor": "acme-helpdesk",
+          "channel": "email"
+        },
+        "measurements": {}
+      }
+    }
+  }
+]

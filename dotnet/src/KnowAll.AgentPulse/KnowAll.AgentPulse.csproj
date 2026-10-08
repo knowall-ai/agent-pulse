@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Self-describing constants (ActivityLevels.Info, …) need no XML comment. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <PackageId>KnowAll.AgentPulse</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>KnowAll AI Ltd</Authors>
+    <Company>KnowAll AI Ltd</Company>
+    <Description>Report what your AI agents do: AgentActivity events to Application Insights, shown in the KnowAll Agents Portal.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/knowall-ai/agent-pulse</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/knowall-ai/agent-pulse</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>ai-agents;application-insights;azure;observability;telemetry</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,24 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+.env
+.env.*
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+build/
+python/dist/
+# .NET
+bin/
+obj/
+*.nupkg
+TestResults/
+# Editors and agents
+.vscode/
+.idea/
+.claude/

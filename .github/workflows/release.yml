@@ -1,0 +1,136 @@
+name: Release
+
+# Publishes a v* tag to npm, PyPI and NuGet. Each registry is OFF until its repository
+# variable is set to 'true' (Settings → Secrets and variables → Actions → Variables):
+#   PUBLISH_NPM    needs secret NPM_TOKEN (an npm automation token with publish rights on @knowall-ai)
+#   PUBLISH_PYPI   needs a PyPI trusted publisher for this repo, workflow release.yml, environment pypi
+#   PUBLISH_NUGET  needs secret NUGET_API_KEY (a nuget.org key scoped to KnowAll.AgentPulse)
+# Every tag still gets a GitHub release with the built packages attached.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and check versions
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Tag matches every package version
+        id: version
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          npm_v=$(node -p "require('./package.json').version")
+          py_v=$(python -c "import tomllib;print(tomllib.load(open('python/pyproject.toml','rb'))['project']['version'])")
+          net_v=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' dotnet/src/KnowAll.AgentPulse/KnowAll.AgentPulse.csproj)
+          echo "npm=$npm_v python=$py_v dotnet=$net_v tag=$REF_NAME"
+          [ "$npm_v" = "$py_v" ] && [ "$npm_v" = "$net_v" ] || { echo "::error::package versions differ"; exit 1; }
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "$REF_NAME" != "v$npm_v" ]; then
+            echo "::error::tag $REF_NAME does not match version $npm_v"; exit 1
+          fi
+          echo "version=$npm_v" >> "$GITHUB_OUTPUT"
+      - run: npm ci && npm run check && npm pack
+      - run: pip install build && python -m build python --outdir dist-python
+      - run: dotnet test dotnet --configuration Release && dotnet pack dotnet/src/KnowAll.AgentPulse --configuration Release --output dist-nuget
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: |
+            *.tgz
+            dist-python/*
+            dist-nuget/*.nupkg
+
+  github-release:
+    name: GitHub release
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: packages
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$REPO" --title "$TAG" --generate-notes
+          gh release upload "$TAG" packages/*.tgz packages/dist-python/* packages/dist-nuget/*.nupkg --repo "$REPO" --clobber
+
+  npm:
+    name: Publish to npm
+    needs: build
+    if: github.ref_type == 'tag' && vars.PUBLISH_NPM == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # npm provenance
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  pypi:
+    name: Publish to PyPI
+    needs: build
+    if: github.ref_type == 'tag' && vars.PUBLISH_PYPI == 'true'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # trusted publishing: no API token stored
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: packages
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/dist-python
+
+  nuget:
+    name: Publish to NuGet
+    needs: build
+    if: github.ref_type == 'tag' && vars.PUBLISH_NUGET == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: packages
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet nuget push "packages/dist-nuget/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

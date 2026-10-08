@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-pulse"
+version = "0.1.0"
+description = "Report what your AI agents do: AgentActivity events to Application Insights, shown in the KnowAll Agents Portal"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "KnowAll AI Ltd" }]
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["ai-agents", "application-insights", "azure", "observability", "telemetry"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Topic :: System :: Monitoring",
+]
+
+[project.urls]
+Homepage = "https://github.com/knowall-ai/agent-pulse"
+Issues = "https://github.com/knowall-ai/agent-pulse/issues"
+Specification = "https://github.com/knowall-ai/agent-pulse/blob/main/spec/AGENT-ACTIVITY.md"
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+agent_pulse = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

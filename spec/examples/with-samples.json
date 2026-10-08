@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Microsoft.ApplicationInsights.Event",
+    "time": "2026-10-08T10:00:00.000Z",
+    "iKey": "00000000-0000-0000-0000-000000000000",
+    "tags": {
+      "ai.cloud.role": "acme-helpdesk"
+    },
+    "data": {
+      "baseType": "EventData",
+      "baseData": {
+        "ver": 2,
+        "name": "AgentActivity",
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.drafted",
+          "title": "Drafted reply · billing",
+          "level": "success",
+          "activityId": "8af5ebe499d92e67bcde3ada926d198b63954d4da9919336ab49d3dffc5c6b53",
+          "subject": "billing",
+          "actor": "acme-helpdesk",
+          "channel": "email",
+          "sampleRequest": "Hi, this is ***** (*****). Why was I charged twice?",
+          "sampleResponse": "Hi *****,\n\nSorry about that: the second charge is a pre-authorisation and drops off within 5 days.\n\nKind regards\n*****"
+        },
+        "measurements": {}
+      }
+    }
+  }
+]

@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Microsoft.ApplicationInsights.Event",
+    "time": "2026-10-08T10:00:00.000Z",
+    "iKey": "00000000-0000-0000-0000-000000000000",
+    "tags": {
+      "ai.cloud.role": "acme-helpdesk"
+    },
+    "data": {
+      "baseType": "EventData",
+      "baseData": {
+        "ver": 2,
+        "name": "AgentActivity",
+        "properties": {
+          "schemaVersion": "1",
+          "agentId": "acme-helpdesk",
+          "activityType": "email.drafted",
+          "title": "Drafted reply · returns",
+          "level": "success",
+          "activityId": "ce261f942bdfe6d07e6155ab4c0be51a73f55de285f4c644c1b8028eb6186cf8",
+          "subject": "returns",
+          "actor": "acme-helpdesk",
+          "channel": "email",
+          "occurredAt": "2026-09-01T08:15:00.000Z",
+          "backfilled": "true"
+        },
+        "measurements": {}
+      }
+    }
+  }
+]
